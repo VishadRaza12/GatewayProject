@@ -1,6 +1,7 @@
 package gateway.api.controller;
 
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,12 +35,18 @@ import gateway.api.bean.UserDTO;
 import gateway.api.bean.UserDetailsWithToken;
 import gateway.api.config.JwtTokenUtil;
 import gateway.api.exception.CustomException;
+import gateway.api.model.Dimension;
+import gateway.api.model.Perimeter;
 import gateway.api.model.Users;
 import gateway.api.model.JWT.JwtConfiguration;
 import gateway.api.model.JWT.JwtRequest;
 import gateway.api.repository.UserRepository;
 import gateway.api.repository.JwtConfigurationRepository;
 import gateway.api.service.JwtUserDetailsService;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import io.jsonwebtoken.ExpiredJwtException;
 
 
@@ -74,7 +82,15 @@ public class JwtAuthenticationController {
     RestTemplate restTemplate = new RestTemplate();
 
    
+    private final Bucket bucket;
 
+    public JwtAuthenticationController() {
+        Bandwidth limit = Bandwidth.classic(50, Refill.greedy(50, Duration.ofMinutes(1)));
+        bucket = Bucket4j.builder()
+                .addLimit(limit)
+                .build();
+    
+    }
 
     @RequestMapping(value = "/api/auth/register", method = RequestMethod.POST)
     public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
@@ -210,6 +226,12 @@ public class JwtAuthenticationController {
         logger.debug("This is userid object: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(userid));
   userDetailsWithToken.setEmail(userD.getEmail());
         return userDetailsWithToken;
+    }
+
+    @PostMapping(value = "/api/v1/perimeter/rectangle")
+    public ResponseEntity<Perimeter> rectangle(@RequestBody Dimension dimensions) {
+        return ResponseEntity.ok(new Perimeter("rectangle",
+                (double) 2 * (dimensions.getLength() + dimensions.getBreadth())));
     }
 
 }
