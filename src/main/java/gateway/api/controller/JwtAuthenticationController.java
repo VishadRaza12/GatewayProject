@@ -38,8 +38,6 @@ import gateway.api.bean.UserDTO;
 import gateway.api.bean.UserDetailsWithToken;
 import gateway.api.config.JwtTokenUtil;
 import gateway.api.exception.CustomException;
-import gateway.api.model.Dimension;
-import gateway.api.model.Perimeter;
 import gateway.api.model.Users;
 import gateway.api.model.JWT.JwtConfiguration;
 import gateway.api.model.JWT.JwtRequest;
