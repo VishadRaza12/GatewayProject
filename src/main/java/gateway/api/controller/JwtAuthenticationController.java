@@ -84,13 +84,7 @@ public class JwtAuthenticationController {
    
     private final Bucket bucket;
 
-    public JwtAuthenticationController() {
-        Bandwidth limit = Bandwidth.classic(50, Refill.greedy(50, Duration.ofMinutes(1)));
-        bucket = Bucket4j.builder()
-                .addLimit(limit)
-                .build();
-    
-    }
+   
 
     @RequestMapping(value = "/api/auth/register", method = RequestMethod.POST)
     public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
@@ -237,6 +231,14 @@ public class JwtAuthenticationController {
         }
     
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+    }
+
+    public JwtAuthenticationController() {
+        Bandwidth limit = Bandwidth.classic(2, Refill.greedy(2, Duration.ofMinutes(1)));
+        bucket = Bucket4j.builder()
+                .addLimit(limit)
+                .build();
+    
     }
 
 }
