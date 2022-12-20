@@ -21,6 +21,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -222,12 +225,12 @@ public class JwtAuthenticationController {
         return userDetailsWithToken;
     }
 
-    @PostMapping(value = "/api/v1/perimeter/rectangle")
-    public ResponseEntity<Perimeter> rectangle(@RequestBody Dimension dimensions) {
+    @GetMapping(value = "/api/getuserbyId/{id}")
+    public ResponseEntity<Users> rectangle(@PathVariable(value="id") String id) {
     
         if (bucket.tryConsume(1)) {
-            return ResponseEntity.ok(new Perimeter("rectangle",
-                    (double) 2 * (dimensions.getLength() + dimensions.getBreadth())));
+            Users u = userRepository.findByEmpId(id);
+            return ResponseEntity.ok(u);
         }
     
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
