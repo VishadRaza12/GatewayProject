@@ -230,8 +230,13 @@ public class JwtAuthenticationController {
 
     @PostMapping(value = "/api/v1/perimeter/rectangle")
     public ResponseEntity<Perimeter> rectangle(@RequestBody Dimension dimensions) {
-        return ResponseEntity.ok(new Perimeter("rectangle",
-                (double) 2 * (dimensions.getLength() + dimensions.getBreadth())));
+    
+        if (bucket.tryConsume(1)) {
+            return ResponseEntity.ok(new Perimeter("rectangle",
+                    (double) 2 * (dimensions.getLength() + dimensions.getBreadth())));
+        }
+    
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
 
 }
