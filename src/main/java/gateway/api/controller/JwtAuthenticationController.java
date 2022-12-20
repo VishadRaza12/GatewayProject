@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -99,6 +101,7 @@ public class JwtAuthenticationController {
         return responseEntity;
     }
 
+    @CacheEvict(allEntries=true)
     @RequestMapping(value = "/signout", method = RequestMethod.GET)
     public String signout(HttpServletRequest request, Authentication authentication) throws Exception {
 
@@ -223,6 +226,7 @@ public class JwtAuthenticationController {
         return userDetailsWithToken;
     }
 
+    @CachePut(value="empId")
     @GetMapping(value = "/api/getuserbyId/{id}")
     public ResponseEntity<Users> rectangle(@PathVariable(value="id") String id) {
     
