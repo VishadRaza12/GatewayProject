@@ -2,9 +2,7 @@ package gateway.api.controller;
 
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,17 +23,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cn.licoy.encryptbody.annotation.encrypt.EncryptBody;
+import cn.licoy.encryptbody.enums.EncryptBodyMethod;
 import gateway.api.bean.UserDTO;
 import gateway.api.bean.UserDetailsWithToken;
 import gateway.api.config.JwtTokenUtil;
@@ -43,8 +42,8 @@ import gateway.api.exception.CustomException;
 import gateway.api.model.Users;
 import gateway.api.model.JWT.JwtConfiguration;
 import gateway.api.model.JWT.JwtRequest;
-import gateway.api.repository.UserRepository;
 import gateway.api.repository.JwtConfigurationRepository;
+import gateway.api.repository.UserRepository;
 import gateway.api.service.JwtUserDetailsService;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -190,6 +189,18 @@ public class JwtAuthenticationController {
       
 
         JwtConfiguration jwt = jwtConfigurationRepository.findTopByOrderByIdAsc();
+        if(jwt == null) {
+        	jwt = new JwtConfiguration ();
+        	jwt.setEncodingalgorithmname("Base64");
+        	jwt.setEncryptionalgorithmname("AES");
+        	jwt.setEncryptionsecretkey("c2VjcmV0a2V5");
+        	jwt.setJwtalgorithmname("HS512");
+        	jwt.setJwtRefreshTokenValidity(1800000L);
+        	jwt.setJwtsecretkey("EnWIcmUs9Tfr81nY5Z1bsg==");
+        	jwt.setJwtvalidity(300000L);
+        	jwt.setInitializationvector("ZW5jcnlwdGlvbkludFZlYw==");
+        	jwtConfigurationRepository.save(jwt);
+        }
         final String token = jwtTokenUtil.generateToken(userC, jwt);
         logger.debug("This is token string: " + token);
 
@@ -226,7 +237,7 @@ public class JwtAuthenticationController {
         return userDetailsWithToken;
     }
 
-    @CachePut(value="empId")
+//    @CachePut(value="empId")
     @GetMapping(value = "/api/getuserbyId/{id}")
     public ResponseEntity<Users> rectangle(@PathVariable(value="id") String id) {
     
@@ -246,4 +257,17 @@ public class JwtAuthenticationController {
     
     }
 
+    @GetMapping
+    @ResponseBody
+    @EncryptBody(value = EncryptBodyMethod.AES)
+    public String test(){
+        return "hello world";
+    }
+    
+    @RequestMapping(value = "/api/users", method = RequestMethod.GET)
+    @Cacheable("users")
+    @ResponseBody
+    public List<Users> getUsers(){
+        return userRepository.findAll();
+    }
 }

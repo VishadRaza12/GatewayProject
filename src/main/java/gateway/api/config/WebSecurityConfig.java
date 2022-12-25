@@ -65,7 +65,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authorizeRequests()
-				.antMatchers("/api/auth/**", "/authenticate", "/signout","/register","/health")
+				.antMatchers("/api/auth/**", "/authenticate", "/signout","/register","/health", "/swagger-ui/", "/swagger-ui",
+						"/swagger-ui.html/**", "/configuration/**", "/swagger-resources/**",
+						"/v2/api-docs", "/webjars/**")
 				.permitAll()
 				// .antMatchers("/api/test/**").permitAll()
 				.anyRequest().authenticated();
